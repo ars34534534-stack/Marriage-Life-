@@ -1,6 +1,6 @@
 
 import { ID, Query } from 'appwrite';
-import { databases, DATABASE_ID, TABLES } from './database.js';
+import { tablesDB, DATABASE_ID, TABLES } from './database.js';
 
 // دو صارفین کے درمیان چیٹ بنائیں
 export async function createChat(user1Id, user2Id) {
@@ -8,10 +8,10 @@ export async function createChat(user1Id, user2Id) {
     throw new Error('Two different user IDs are required.');
   }
 
-  return databases.createDocument({
+  return tablesDB.createRow({
     databaseId: DATABASE_ID,
-    collectionId: TABLES.chats,
-    documentId: ID.unique(),
+    tableId: TABLES.chats,
+    rowId: ID.unique(),
     data: {
       user1Id,
       user2Id,
@@ -27,18 +27,18 @@ export async function getMyChats(userId) {
   }
 
   const [first, second] = await Promise.all([
-    databases.listDocuments({
+    tablesDB.listRows({
       databaseId: DATABASE_ID,
-      collectionId: TABLES.chats,
+      tableId: TABLES.chats,
       queries: [
         Query.equal('user1Id', userId),
         Query.orderDesc('$createdAt'),
         Query.limit(50)
       ]
     }),
-    databases.listDocuments({
+    tablesDB.listRows({
       databaseId: DATABASE_ID,
-      collectionId: TABLES.chats,
+      tableId: TABLES.chats,
       queries: [
         Query.equal('user2Id', userId),
         Query.orderDesc('$createdAt'),
@@ -47,5 +47,5 @@ export async function getMyChats(userId) {
     })
   ]);
 
-  return [...first.documents, ...second.documents];
+  return [...(first.rows || []), ...(second.rows || [])];
 }
