@@ -1,6 +1,6 @@
 
 import { ID, Query } from 'appwrite';
-import { databases, DATABASE_ID, TABLES } from './database.js';
+import { tablesDB, DATABASE_ID, TABLES } from './database.js';
 
 // Selfie verification کی درخواست جمع کریں
 export async function submitVerification({
@@ -11,10 +11,10 @@ export async function submitVerification({
     throw new Error('User ID and selfie file ID are required.');
   }
 
-  return databases.createDocument({
+  return tablesDB.createRow({
     databaseId: DATABASE_ID,
-    collectionId: TABLES.verifications,
-    documentId: ID.unique(),
+    tableId: TABLES.verifications,
+    rowId: ID.unique(),
     data: {
       userId,
       photoFileId,
@@ -30,9 +30,9 @@ export async function getMyVerification(userId) {
     throw new Error('User ID is required.');
   }
 
-  const result = await databases.listDocuments({
+  const result = await tablesDB.listRows({
     databaseId: DATABASE_ID,
-    collectionId: TABLES.verifications,
+    tableId: TABLES.verifications,
     queries: [
       Query.equal('userId', userId),
       Query.orderDesc('$createdAt'),
@@ -40,5 +40,5 @@ export async function getMyVerification(userId) {
     ]
   });
 
-  return result.documents[0] || null;
+  return result.rows?.[0] || null;
 }
