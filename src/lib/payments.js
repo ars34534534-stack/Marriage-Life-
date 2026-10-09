@@ -1,6 +1,6 @@
 
 import { ID, Query } from 'appwrite';
-import { databases, DATABASE_ID, TABLES } from './database.js';
+import { tablesDB, DATABASE_ID, TABLES } from './database.js';
 
 export const PREMIUM_PLANS = [
   { id: '7days', days: 7, price: 490 },
@@ -22,10 +22,10 @@ export async function submitPayment({
     throw new Error('Please complete all payment details.');
   }
 
-  return databases.createDocument({
+  return tablesDB.createRow({
     databaseId: DATABASE_ID,
-    collectionId: TABLES.payments,
-    documentId: ID.unique(),
+    tableId: TABLES.payments,
+    rowId: ID.unique(),
     data: {
       userId,
       planId,
@@ -45,9 +45,9 @@ export async function getMyPayments(userId) {
     throw new Error('User ID is required.');
   }
 
-  const result = await databases.listDocuments({
+  const result = await tablesDB.listRows({
     databaseId: DATABASE_ID,
-    collectionId: TABLES.payments,
+    tableId: TABLES.payments,
     queries: [
       Query.equal('userId', userId),
       Query.orderDesc('$createdAt'),
@@ -55,5 +55,5 @@ export async function getMyPayments(userId) {
     ]
   });
 
-  return result.documents;
-        }
+  return result.rows || [];
+}
