@@ -1,5 +1,5 @@
 
-import { databases, DATABASE_ID } from './appwrite.js';
+import { tablesDB, DATABASE_ID } from './appwrite.js';
 
 export const TABLES = {
   profiles: '6ac7d944003273018b91',
@@ -13,4 +13,4 @@ export const TABLES = {
   photos: '6ac7e18a000803f06f86'
 };
 
-export { databases, DATABASE_ID };
+export { tablesDB, DATABASE_ID };
