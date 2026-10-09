@@ -1,9 +1,9 @@
 
 import { ID, Query } from 'appwrite';
-import { databases, DATABASE_ID, TABLES } from './database.js';
+import { tablesDB, DATABASE_ID, TABLES } from './database.js';
 
-// کسی پروفائل کی شکایت درج کریں
-export async function submitReport({
+// کسی پروفائل کی رپورٹ کریں
+export async function reportUser({
   reporterId,
   reportedUserId,
   reason,
@@ -17,10 +17,10 @@ export async function submitReport({
     throw new Error('You cannot report your own profile.');
   }
 
-  return databases.createDocument({
+  return tablesDB.createRow({
     databaseId: DATABASE_ID,
-    collectionId: TABLES.reports,
-    documentId: ID.unique(),
+    tableId: TABLES.reports,
+    rowId: ID.unique(),
     data: {
       reporterId,
       reportedUserId,
@@ -31,21 +31,21 @@ export async function submitReport({
   });
 }
 
-// شکایت کنندہ اپنی جمع کردہ شکایات دیکھے
-export async function getMyReports(userId) {
-  if (!userId) {
+// اپنی بھیجی ہوئی رپورٹس دیکھیں
+export async function getMyReports(reporterId) {
+  if (!reporterId) {
     throw new Error('User ID is required.');
   }
 
-  const result = await databases.listDocuments({
+  const result = await tablesDB.listRows({
     databaseId: DATABASE_ID,
-    collectionId: TABLES.reports,
+    tableId: TABLES.reports,
     queries: [
-      Query.equal('reporterId', userId),
+      Query.equal('reporterId', reporterId),
       Query.orderDesc('$createdAt'),
       Query.limit(50)
     ]
   });
 
-  return result.documents;
+  return result.rows || [];
 }
