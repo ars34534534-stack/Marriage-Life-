@@ -1,6 +1,6 @@
 
 import { ID, Query } from 'appwrite';
-import { databases, DATABASE_ID, TABLES } from './database.js';
+import { tablesDB, DATABASE_ID, TABLES } from './database.js';
 
 // چیٹ میں پیغام بھیجیں
 export async function sendMessage({
@@ -17,10 +17,10 @@ export async function sendMessage({
     throw new Error('Sender and receiver must be different.');
   }
 
-  return databases.createDocument({
+  return tablesDB.createRow({
     databaseId: DATABASE_ID,
-    collectionId: TABLES.messages,
-    documentId: ID.unique(),
+    tableId: TABLES.messages,
+    rowId: ID.unique(),
     data: {
       chatId,
       senderId,
@@ -37,9 +37,9 @@ export async function getChatMessages(chatId) {
     throw new Error('Chat ID is required.');
   }
 
-  const result = await databases.listDocuments({
+  const result = await tablesDB.listRows({
     databaseId: DATABASE_ID,
-    collectionId: TABLES.messages,
+    tableId: TABLES.messages,
     queries: [
       Query.equal('chatId', chatId),
       Query.orderAsc('$createdAt'),
@@ -47,5 +47,5 @@ export async function getChatMessages(chatId) {
     ]
   });
 
-  return result.documents;
+  return result.rows || [];
 }
