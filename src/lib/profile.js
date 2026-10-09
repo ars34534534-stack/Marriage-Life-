@@ -1,13 +1,13 @@
 
 import { ID, Query } from 'appwrite';
-import { databases, DATABASE_ID, TABLES } from './database.js';
+import { tablesDB, DATABASE_ID, TABLES } from './database.js';
 
 // نئی پروفائل محفوظ کریں
 export async function createProfile(userId, profileData) {
-  return databases.createDocument({
+  return tablesDB.createRow({
     databaseId: DATABASE_ID,
-    collectionId: TABLES.profiles,
-    documentId: ID.unique(),
+    tableId: TABLES.profiles,
+    rowId: ID.unique(),
     data: {
       userId,
       name: profileData.name || '',
@@ -24,24 +24,24 @@ export async function createProfile(userId, profileData) {
 
 // اپنی پروفائل تلاش کریں
 export async function getMyProfile(userId) {
-  const result = await databases.listDocuments({
+  const result = await tablesDB.listRows({
     databaseId: DATABASE_ID,
-    collectionId: TABLES.profiles,
+    tableId: TABLES.profiles,
     queries: [
       Query.equal('userId', userId),
       Query.limit(1)
     ]
   });
 
-  return result.documents[0] || null;
+  return result.rows?.[0] || null;
 }
 
 // پروفائل اپ ڈیٹ کریں
-export async function updateProfile(documentId, profileData) {
-  return databases.updateDocument({
+export async function updateProfile(rowId, profileData) {
+  return tablesDB.updateRow({
     databaseId: DATABASE_ID,
-    collectionId: TABLES.profiles,
-    documentId,
+    tableId: TABLES.profiles,
+    rowId,
     data: {
       name: profileData.name || '',
       age: Number(profileData.age) || 0,
@@ -53,5 +53,5 @@ export async function updateProfile(documentId, profileData) {
       photoUrl: profileData.photoUrl || ''
     }
   });
-    }
-        
+  }
+    
