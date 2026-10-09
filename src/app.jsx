@@ -1,115 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { account, databases, storage, DB_ID, COLLECTIONS } from './appwrite';
+import { account, databases, DB_ID, COLLECTIONS } from './appwrite';
 import { ID, Query } from 'appwrite';
 
 export default function App() {
   const [user, setUser] = useState(null);
-  const [lang, setLang] = useState('roman'); // 'roman', 'ur', 'en', 'ar'
+  const [lang, setLang] = useState('roman');
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState('home'); // home, profile, requests, admin, premium
-  
-  // Auth Form States
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-
-  // Profile Form States
-  const [profile, setProfile] = useState(null);
-  const [name, setName] = useState('');
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState('Male');
-  const [city, setCity] = useState('');
-  const [country, setCountry] = useState('Pakistan');
-  const [occupation, setOccupation] = useState('');
-  const [bio, setBio] = useState('');
-
-  // Profiles List & Filters
-  const [profilesList, setProfilesList] = useState([]);
-  const [filterGender, setFilterGender] = useState('');
-
-  // Admin State
-  const [adminPayments, setAdminPayments] = useState([]);
-
-  // Multi-Language Dictionary
-  const t = {
-    roman: {
-      title: 'Marriage Life - Rishta App',
-      login: 'Login Karein',
-      signup: 'Naya Account Banayein',
-      email: 'Email Address',
-      password: 'Password',
-      logout: 'Logout',
-      profiles: 'Rishtay Talash Karein',
-      myProfile: 'Meri Profile',
-      requests: 'Darkhwastein (Requests)',
-      admin: 'Admin Panel',
-      premium: 'Premium Packages',
-      save: 'Profile Mehfooz Karein',
-      ageCheck: 'Aap ki umar kam az kam 18 saal honi chahiye.',
-      noProfiles: 'Koi profile nahi mili.',
-      sendInterest: 'Dilchaspi (Interest) Bhejin',
-      upgradeTitle: 'Premium Member Banein',
-      adminTitle: 'Secure Admin Dashboard',
-    },
-    ur: {
-      title: 'شادی لائف - رشتہ ڈاٹ کام',
-      login: 'لاگ ان کریں',
-      signup: 'نیا اکاؤنٹ بنائیں',
-      email: 'ای میل ایڈریس',
-      password: 'پاسورڈ',
-      logout: 'لاگ آؤٹ',
-      profiles: 'رشتے تلاش کریں',
-      myProfile: 'میری پروفائل',
-      requests: 'درخواستیں',
-      admin: 'ایڈمن پینل',
-      premium: 'پریمیم پیکجز',
-      save: 'پروفائل محفوظ کریں',
-      ageCheck: 'آپ کی عمر کم از کم 18 سال ہونی چاہئے۔',
-      noProfiles: 'کوئی پروفائل نہیں ملی۔',
-      sendInterest: 'رشتہ کی درخواست بھیجیں',
-      upgradeTitle: 'پریمیم میں اپ گریڈ کریں',
-      adminTitle: 'محفوظ ایڈمن ڈیش بورڈ',
-    },
-    en: {
-      title: 'Marriage Life Matrimonial',
-      login: 'Login',
-      signup: 'Sign Up',
-      email: 'Email Address',
-      password: 'Password',
-      logout: 'Logout',
-      profiles: 'Find Profiles',
-      myProfile: 'My Profile',
-      requests: 'Requests',
-      admin: 'Admin Panel',
-      premium: 'Premium Packages',
-      save: 'Save Profile',
-      ageCheck: 'You must be at least 18 years old to register.',
-      noProfiles: 'No profiles found.',
-      sendInterest: 'Send Interest',
-      upgradeTitle: 'Upgrade to Premium',
-      adminTitle: 'Secure Admin Dashboard',
-    },
-    ar: {
-      title: 'حياة الزواج - تطبيق الزواج',
-      login: 'تسجيل الدخول',
-      signup: 'إنشاء حساب جديد',
-      email: 'البريد الإلكتروني',
-      password: 'كلمة المرور',
-      logout: 'تسجيل الخروج',
-      profiles: 'البحث عن ملفات',
-      myProfile: 'ملفي الشخصي',
-      requests: 'الطلبات',
-      admin: 'لوحة التحكم',
-      premium: 'الباقات المميزة',
-      save: 'حفظ الملف الشخصي',
-      ageCheck: 'يجب أن يكون عمرك 18 عاماً على الأقل.',
-      noProfiles: 'لم يتم العثور على ملفات شخصية.',
-      sendInterest: 'إرسال اهتمام',
-      upgradeTitle: 'الترقية إلى الباقة المميزة',
-      adminTitle: 'لوحة تحكم المسؤول',
-    }
-  };
 
   useEffect(() => {
     checkUser();
@@ -119,11 +18,6 @@ export default function App() {
     try {
       const current = await account.get();
       setUser(current);
-      fetchProfile(current.$id);
-      fetchProfilesList();
-      if (current.email === 'admin@marriagelife.com') {
-        fetchAdminData();
-      }
     } catch (err) {
       setUser(null);
     } finally {
@@ -135,124 +29,45 @@ export default function App() {
     e.preventDefault();
     setError('');
     try {
-      if (isLogin) {
-        await account.createEmailPasswordSession(email, password);
-      } else {
-        await account.create(ID.unique(), email, password);
-        await account.createEmailPasswordSession(email, password);
-      }
-      await checkUser();
+      await account.createEmailPasswordSession(email, password);
+      const current = await account.get();
+      setUser(current);
     } catch (err) {
       setError(err.message);
-    }
-  };
-
-  const handleLogout = async () => {
-    await account.deleteSession('current');
-    setUser(null);
-    setProfile(null);
-  };
-
-  const fetchProfile = async (userId) => {
-    try {
-      const res = await databases.listDocuments(DB_ID, COLLECTIONS.PROFILES, [
-        Query.equal('userId', userId)
-      ]);
-      if (res.documents.length > 0) {
-        setProfile(res.documents[0]);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const fetchProfilesList = async () => {
-    try {
-      let queries = [];
-      if (filterGender) queries.push(Query.equal('gender', filterGender));
-      const res = await databases.listDocuments(DB_ID, COLLECTIONS.PROFILES, queries);
-      setProfilesList(res.documents);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const saveProfile = async (e) => {
-    e.preventDefault();
-    if (age < 18) {
-      setError(t[lang].ageCheck);
-      return;
-    }
-    try {
-      const data = { userId: user.$id, name, age: Number(age), gender, city, country, occupation, bio };
-      if (profile) {
-        await databases.updateDocument(DB_ID, COLLECTIONS.PROFILES, profile.$id, data);
-      } else {
-        await databases.createDocument(DB_ID, COLLECTIONS.PROFILES, ID.unique(), data);
-      }
-      fetchProfile(user.$id);
-      alert('Success!');
-      setView('home');
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const fetchAdminData = async () => {
-    try {
-      const pRes = await databases.listDocuments(DB_ID, COLLECTIONS.PAYMENTS);
-      setAdminPayments(pRes.documents);
-    } catch (err) {
-      console.error(err);
     }
   };
 
   if (loading) return <div style={{textAlign: 'center', padding: '50px', color: '#e91e63'}}>Loading...</div>;
 
   return (
-    <div style={{ fontFamily: 'sans-serif', backgroundColor: '#fff0f5', minHeight: '100vh', color: '#333', paddingBottom: '40px', direction: lang === 'ar' || lang === 'ur' ? 'rtl' : 'ltr' }}>
-      
-      {/* Header */}
-      <header style={{ backgroundColor: '#e91e63', color: '#fff', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-        <h2 style={{ margin: 0, fontSize: '18px' }}>{t[lang].title}</h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <select value={lang} onChange={(e) => setLang(e.target.value)} style={{ background: '#fff', color: '#e91e63', border: 'none', padding: '5px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
-            <option value="roman">Roman Urdu</option>
-            <option value="ur">اردو</option>
-            <option value="en">English</option>
-            <option value="ar">العربية</option>
-          </select>
-
-          {user && (
-            <button onClick={handleLogout} style={{ background: '#c2185b', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', fontSize: '12px' }}>
-              {t[lang].logout}
-            </button>
-          )}
-        </div>
+    <div style={{ fontFamily: 'sans-serif', backgroundColor: '#fff0f5', minHeight: '100vh', padding: '20px', color: '#333' }}>
+      <header style={{ backgroundColor: '#e91e63', color: '#fff', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
+        <h2>Marriage Life - Matrimonial App</h2>
       </header>
 
-      {/* Main Container */}
-      <div style={{ maxWidth: '600px', margin: '20px auto', padding: '0 15px' }}>
+      <div style={{ maxWidth: '400px', margin: '30px auto', background: '#fff', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
         {!user ? (
-          <div style={{ background: '#fff', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(233,30,99,0.15)' }}>
-            <h3 style={{ color: '#e91e63', textAlign: 'center', marginTop: 0 }}>{isLogin ? t[lang].login : t[lang].signup}</h3>
-            {error && <p style={{ color: 'red', fontSize: '14px', background: '#ffebee', padding: '8px', borderRadius: '4px' }}>{error}</p>}
-            <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <input type="email" placeholder={t[lang].email} value={email} onChange={(e) => setEmail(e.target.value)} required style={{ padding: '12px', borderRadius: '6px', border: '1px solid #ddd' }} />
-              <input type="password" placeholder={t[lang].password} value={password} onChange={(e) => setPassword(e.target.value)} required style={{ padding: '12px', borderRadius: '6px', border: '1px solid #ddd' }} />
-              <button type="submit" style={{ background: '#e91e63', color: '#fff', border: 'none', padding: '12px', borderRadius: '6px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
-                {isLogin ? t[lang].login : t[lang].signup}
-              </button>
+          <div>
+            <h3 style={{ color: '#e91e63', textAlign: 'center' }}>Login / Signup</h3>
+            {error && <p style={{ color: 'red', fontSize: '14px' }}>{error}</p>}
+            <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd' }} />
+              <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd' }} />
+              <button type="submit" style={{ background: '#e91e63', color: '#fff', border: 'none', padding: '10px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>Login</button>
             </form>
-            <p style={{ textAlign: 'center', marginTop: '15px', fontSize: '14px', color: '#666', cursor: 'pointer' }} onClick={() => setIsLogin(!isLogin)}>
-              {isLogin ? "Account nahi hai? Sign Up karein" : "Pehle se account hai? Login"}
-            </p>
           </div>
         ) : (
-          <div>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '5px' }}>
-              <button onClick={() => setView('home')} style={{ background: view === 'home' ? '#e91e63' : '#fff', color: view === 'home' ? '#fff' : '#e91e63', border: '1px solid #e91e63', padding: '8px 15px', borderRadius: '20px', cursor: 'pointer', whiteSpace: 'nowrap' }}>{t[lang].profiles}</button>
-              <button onClick={() => setView('profile')} style={{ background: view === 'profile' ? '#e91e63' : '#fff', color: view === 'profile' ? '#fff' : '#e91e63', border: '1px solid #e91e63', padding: '8px 15px', borderRadius: '20px', cursor: 'pointer', whiteSpace: 'nowrap' }}>{t[lang].myProfile}</button>
+          <div style={{ textAlign: 'center' }}>
+            <h3 style={{ color: '#e91e63' }}>Welcome!</h3>
+            <p>You are logged in successfully.</p>
+            <button onClick={async () => { await account.deleteSession('current'); setUser(null); }} style={{ background: '#c2185b', color: '#fff', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer' }}>Logout</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+ #e91e63', padding: '8px 15px', borderRadius: '20px', cursor: 'pointer', whiteSpace: 'nowrap' }}>{t[lang].myProfile}</button>
               <button onClick={() => setView('premium')} style={{ background: view === 'premium' ? '#e91e63' : '#fff', color: view === 'premium' ? '#fff' : '#e91e63', border: '1px solid #e91e63', padding: '8px 15px', borderRadius: '20px', cursor: 'pointer', whiteSpace: 'nowrap' }}>{t[lang].premium}</button>
               {user.email === 'admin@marriagelife.com' && (
                 <button onClick={() => setView('admin')} style={{ background: view === 'admin' ? '#c2185b' : '#fff', color: view === 'admin' ? '#fff' : '#c2185b', border: '1px solid #c2185b', padding: '8px 15px', borderRadius: '20px', cursor: 'pointer', whiteSpace: 'nowrap' }}>{t[lang].admin}</button>
