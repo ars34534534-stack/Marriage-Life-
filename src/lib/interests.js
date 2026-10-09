@@ -1,6 +1,6 @@
 
 import { ID, Query } from 'appwrite';
-import { databases, DATABASE_ID, TABLES } from './database.js';
+import { tablesDB, DATABASE_ID, TABLES } from './database.js';
 
 // کسی پروفائل کو رشتہ بھیجیں
 export async function sendInterest({
@@ -16,10 +16,10 @@ export async function sendInterest({
     throw new Error('You cannot send interest to your own profile.');
   }
 
-  return databases.createDocument({
+  return tablesDB.createRow({
     databaseId: DATABASE_ID,
-    collectionId: TABLES.interests,
-    documentId: ID.unique(),
+    tableId: TABLES.interests,
+    rowId: ID.unique(),
     data: {
       senderId,
       receiverId,
@@ -29,15 +29,15 @@ export async function sendInterest({
   });
 }
 
-// اپنی موصول ہونے والی دلچسپیاں دیکھیں
+// موصول ہونے والی دلچسپیاں دیکھیں
 export async function getReceivedInterests(userId) {
   if (!userId) {
     throw new Error('User ID is required.');
   }
 
-  const result = await databases.listDocuments({
+  const result = await tablesDB.listRows({
     databaseId: DATABASE_ID,
-    collectionId: TABLES.interests,
+    tableId: TABLES.interests,
     queries: [
       Query.equal('receiverId', userId),
       Query.orderDesc('$createdAt'),
@@ -45,19 +45,19 @@ export async function getReceivedInterests(userId) {
     ]
   });
 
-  return result.documents;
+  return result.rows || [];
 }
 
 // رشتہ قبول یا مسترد کریں
-export async function respondToInterest(documentId, status) {
+export async function respondToInterest(rowId, status) {
   if (!['accepted', 'rejected'].includes(status)) {
     throw new Error('Invalid interest status.');
   }
 
-  return databases.updateDocument({
+  return tablesDB.updateRow({
     databaseId: DATABASE_ID,
-    collectionId: TABLES.interests,
-    documentId,
+    tableId: TABLES.interests,
+    rowId,
     data: { status }
   });
     }
