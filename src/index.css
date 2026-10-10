@@ -1,0 +1,94 @@
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #29212a;
+  background: #fff7fa;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button {
+  border: 0;
+  border-radius: 12px;
+  padding: 14px 24px;
+  background: #e91e63;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #c2185b;
+}
+
+.app {
+  min-height: 100vh;
+}
+
+.topbar {
+  padding: 24px 16px;
+  background: white;
+  text-align: center;
+  border-bottom: 1px solid #f5dce6;
+}
+
+.topbar h1 {
+  margin: 0;
+  color: #d81b60;
+  font-size: 28px;
+}
+
+.topbar p {
+  margin: 8px 0 0;
+  color: #71616a;
+}
+
+.welcome {
+  width: min(90%, 600px);
+  margin: 64px auto;
+  padding: 36px 24px;
+  background: white;
+  border: 1px solid #f5dce6;
+  border-radius: 24px;
+  box-shadow: 0 12px 35px rgba(160, 30, 80, 0.08);
+  text-align: center;
+}
+
+.welcome h2 {
+  color: #b71550;
+  font-size: 28px;
+}
+
+.welcome p {
+  margin: 20px 0 28px;
+  color: #62545b;
+  line-height: 1.8;
+}
+
+footer {
+  padding: 24px;
+  color: #71616a;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .welcome {
+    margin: 32px auto;
+    padding: 28px 18px;
+  }
+
+  .welcome h2 {
+    font-size: 24px;
+  }
+}
